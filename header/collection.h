@@ -5,20 +5,18 @@
 struct collection//collision collection 
 {
 	double mass;//, angular_mass;
-//	double angle, angular_velocity;
 	Eigen::Vector2d position, velocity; //center of mass
 
 	std::vector<prim*> prim_pointers;
 	std::vector<contact> internal_contacts; //contacts between *prim_pointers
 
-	prim enclosing_circle;
-	//probably want to add an enclosing circle prim to speed up contact queries
+	prim enclosing_circle; //To speed up contact queries in method 0
 
 	collection* p_proxy;
 
 	bool is_own_proxy; 
 
-	void free(); //clears and frees the memory used by the vectors prim_pointers and internal_contacts
+	void free(); //clears and frees the memory used by the vectors prim_pointers and internal_contacts. Unused and unneeded.
 
 	void adjoin(prim & prim_reference); //Add prim to collection, updates mass, position, velocity.
 	//Does not alter internal_contacts, prim_reference.position, or prim_reference.velocity;
