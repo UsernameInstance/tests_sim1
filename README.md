@@ -1,7 +1,7 @@
 # tests_sim1
 This is a learning project created to practice using Cygwin, Gnu Make, Vim, GDB, C++, SDL2, and IPOPT, as well as to learn the basics of Git and GitHub.
 
-Besides learning, the project was made to allow me to run a few different experiments involving continuous collision detection and simultaneous collision resolution of rigid bodies in two dimensions. The rigid bodies consist of frictionless discs or the set complement of a disc without rotation. The physics engine is impulse based. Collisions are resolved using generalized reflections (see http://www.cs.columbia.edu/cg/rosi/rosi.pdf). The timestep is fixed at .008 seconds, i.e. each physics loop simulates .008 seconds.
+Besides learning, the project was made to allow me to run a few different experiments involving continuous collision detection and simultaneous collision resolution of rigid bodies in two dimensions. The rigid bodies consist of frictionless discs or the set complement of a disc without rotation. The physics engine is impulse based. Collisions are resolved using generalized reflections (see http://www.cs.columbia.edu/cg/rosi/rosi.pdf). The timestep is fixed at .008 seconds; i.e., each physics loop simulates .008 seconds.
 
 ## What the project does
 The project consists of four different tests together with a few settings that can be adjusted using the keyboard: method, tolerance and resting_tolerance, and coefficient of restitution (COR). A short video of the tests can be found here https://youtu.be/tMoFXv5tBHs.
