@@ -41,7 +41,7 @@ class app
 	double tolerance;
 	double resting_tolerance;
 	int method;
-	bool reset_sap;
+	bool reset_sap; //if true reset sweep and prune boxes on loop
 
 	public:
 	static const int width = 900;
