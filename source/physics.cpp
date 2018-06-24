@@ -71,6 +71,7 @@ void step_physics(std::vector<prim> & prim_list, double time_step, int step_limi
 //should probably clean this file up. Lots of unintended stuff added over time (e.g. tolerances), just to try random stuff.
 //experimenting with bound on number of collisions in timestep (no tunneling) by number of collidable objects
 //collisions treated as inelastic and sticking until end of time step, at which point velocities from beginning of time step are restored and collisions resolved.
+//All advice received seems to indicate that goto statements are evil and should rarely be used. Using them here for learning purposes.
 /*
 0. save original prim_list velocity vectors in backup, initialize collection_list with input prims, initialize time_left with time_step
 1. get all min time collision containing collection_contacts
@@ -79,7 +80,7 @@ void step_physics(std::vector<prim> & prim_list, double time_step, int step_limi
 4. merge all collections in contact with one another until there are no more distinct collections in contact
 5. set time_left = time_left - min_time_collision
 6. if time_left > 0 go to step 1. else if time_left <= 0 continue to step 7.
-7. restore all prims velocities in prim_list with backup created in step 0.
+7. Get resting contacts, merge them appropriately, and restore all prims velocities in prim_list with backup created in step 0.
 8. For each collection with is_own_proxy true, form contact manifold and resolve (collisions).
 */
 void step_physics_0(std::vector<prim> & prim_list, double time_step, int step_limit, double tolerance, double resting_tolerance, bool reset_sap)
@@ -89,7 +90,7 @@ void step_physics_0(std::vector<prim> & prim_list, double time_step, int step_li
 	backup_velocities.reserve(prim_list.size());
 
 	std::deque<collection> collection_list;
-	if(sapx_list.size() != prim_list.size() || reset_sap)
+	if(sapx_list.size() != prim_list.size() || reset_sap) //check if sap boxes need to be reset due to change in prim_list
 	{
 		sapx_list.clear();
 		sapx_list.reserve(prim_list.size());
@@ -199,7 +200,7 @@ step_1:
 	//step 4. begin
 	for(auto & ele : collisions)
 	{
-		ele.p_collection_0->get_proxy().assimilate(ele.p_collection_1->get_proxy()); //contact_list; //if collection_1 and collection_0 same proxy then nothing happens this line
+		ele.p_collection_0->get_proxy().assimilate(ele.p_collection_1->get_proxy()); //if collection_1 and collection_0 same proxy then nothing happens this line
 		ele.p_collection_0->get_proxy().internal_contacts.insert(ele.p_collection_0->get_proxy().internal_contacts.end(), ele.contact_list.begin(), ele.contact_list.end()); 
 		ele.p_collection_0->get_proxy().homogenize_velocities(); //experimenting with bound on number of collisions in timestep (no tunneling though);
 	}
@@ -216,7 +217,6 @@ step_1:
 
 	//step 7. begin
 step_7:
-	//step extra 
 	//get resting (non-colliding) contacts
 	collisions.clear();	
 	for(auto & ele0 : sapx_list)
@@ -258,10 +258,11 @@ step_7:
 	}
 	for(auto & ele : collisions)
 	{
-		ele.p_collection_0->get_proxy().assimilate(ele.p_collection_1->get_proxy()); //contact_list; //if collection_1 and collection_0 same proxy then nothing happens this line
+		ele.p_collection_0->get_proxy().assimilate(ele.p_collection_1->get_proxy()); //if collection_1 and collection_0 same proxy then nothing happens this line
 		ele.p_collection_0->get_proxy().internal_contacts.insert(ele.p_collection_0->get_proxy().internal_contacts.end(), ele.contact_list.begin(), ele.contact_list.end()); 
 	}
-
+	
+	//restore velocities
 	for(size_t i=0; i<prim_list.size(); ++i)
 	{
 		prim_list.at(i).velocity = backup_velocities.at(i);
@@ -286,13 +287,13 @@ step_7:
 
 //for non-performance (behavior) comparison purposes
 //should probably redesign from scratch with intent to resolve all (as many as possible) collisions as soon as they occur instead of altering above code.
-//grinds to a halt with inelastic collisions since successive collisions are so close together in time (step 2. gives 0 or tiny timestep)
+//grinds to a halt with low tolerances+inelastic collisions since successive collisions are so close together in time (step 2. gives 0 or tiny timestep)
 /*
 0. Initialize collection_list_0 and collection_list with input prims and time_left with time_step.
    while time_left > 0 do 
 	1. Get all min time collision containing collection_contacts
 	2. Step all distinct collections forward to min(time_left, min time collision) 
-	3. If no collisions found in step 1. then return.
+	3. If no collisions found in step 1. then return else get resting_contacts.
 	4. Merge all collections in contact with one another until there are no more distinct collections in contact
 	5. For each collection with is_own_proxy true and at least one internal contact, form contact manifold and resolve (collisions).
 	6. Set time_left = time_left - min_time_collision and collection_list = collection_list_0
@@ -342,7 +343,6 @@ void step_physics_1(std::vector<prim> & prim_list, double time_step, int step_li
 			sapx_list.at(i).update(time_left, 0);
 		}
 		insertion_sort(sapx_list.begin(), sapx_list.end(), [](sapbox & box0, sapbox & box1)->bool{ return box0.x0 < box1.x0; });
-//		std::sort(sapx_list.begin(), sapx_list.end(), [](sapbox & box0, sapbox & box1)->bool{ return box0.x0 < box1.x0; });
 		std::vector<collection_contact> collisions;
 		double min_time = time_left; //only equal to min_time_collision if a collision is actually found in the following
 		double approx_min_time = min_time*(1+tolerance); //min_time+tolerance;//min_time*(1+tolerance);
@@ -440,6 +440,7 @@ void step_physics_1(std::vector<prim> & prim_list, double time_step, int step_li
 		}
 		//step 4. end
 		
+		//step 5. begin
 		contact_manifold the_manifold; //single manifold re-use
 		for(size_t i=0; i<collection_list_size; ++i)
 		{
