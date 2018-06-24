@@ -72,12 +72,8 @@ void app::render()
 {
 	SDL_RenderClear(renderer);
 
-	//render background first 
 	for(size_t i=0; i< prim_list.size(); ++i)
 		prim_list.at(i).render();
-	//background_ball_texture.render((width-background_ball_texture.get_width())/2, (height-background_ball_texture.get_height())/2);
-
-	//then render foreground
 	
 	SDL_RenderPresent(renderer);
 }
@@ -117,18 +113,18 @@ int app::execute(int argc, char* argv[])
 	
 	double background_ball_radius = height/2.0;
 	double foreground_ball_radius = 28;
-	double x0 = width/2.0;
-	double y0 = height/2.0;
-	Eigen::Vector2d v0 = Eigen::Vector2d(256,0);
-	double bounce = 1;
+	double x0 = width/2.0; //initial position of cue ball
+	double y0 = height/2.0; //initial position of cue ball
+	Eigen::Vector2d v0 = Eigen::Vector2d(256,0); //initial velocity of cue ball
+	double bounce = 1; //material property corresponds to COR value
 	double pi = 3.14159265358979323846;
-	double foremass = (4.0/3.0)*pi*foreground_ball_radius*foreground_ball_radius*foreground_ball_radius;
-	int mod_num = 1;
-	double mult = 1;
-	std::srand(std::time(NULL));
-	double eps = 0;//1e-9;
-	int L0 = 6;
-	int L1 = 6;
+	double foremass = (4.0/3.0)*pi*foreground_ball_radius*foreground_ball_radius*foreground_ball_radius; //mass of foreground balls
+	int mod_num = 1; //higher values give random initial velocities to balls in tests 3 and 4
+	double mult = 1; //scales large ball in tests 3 and 4. Don't change this line.
+	std::srand(std::time(NULL)); //used with mod_num
+	double eps = 0; //minimum separation of balls in initial configuration in test 2 pool break (0 is touching).
+	int L0 = 6; //number of balls along width of rectangle of balls in tests 3 and 4.
+	int L1 = 6; //number of balls along height of rectangle of balls in tests 3 and 4.
 
 	bool show_parameters = false;
 	std::cout << "\n***************************************************************\n";
@@ -145,7 +141,7 @@ int app::execute(int argc, char* argv[])
 		{
 			event(&Event);
 			if(Event.type == SDL_QUIT) running = false;
-			if(Event.type == SDL_KEYUP) //don't care what key.
+			if(Event.type == SDL_KEYUP)
 			{
 				switch(Event.key.keysym.sym)
 				{
@@ -224,7 +220,7 @@ int app::execute(int argc, char* argv[])
 						reset_sap = true;
 						break;
 
-					case SDLK_1:
+					case SDLK_1: //test 1
 						prim_list.clear();
 						background_ball_radius = height/2.0;
 						foreground_ball_radius = 32;
@@ -243,7 +239,7 @@ int app::execute(int argc, char* argv[])
 						prim_list.push_back(prim(foreground_ball_radius, foremass, bounce, Eigen::Vector2d(x0+4*foreground_ball_radius, y0), Eigen::Vector2d(0,0), prim::type::interior, &foreground_ball_texture));
 						break;
 
-					case SDLK_2:
+					case SDLK_2: //test 2
 						prim_list.clear();
 						background_ball_radius = height/2.0;
 						foreground_ball_radius = 27;
@@ -279,7 +275,7 @@ int app::execute(int argc, char* argv[])
 						prim_list.push_back(prim(foreground_ball_radius, foremass, bounce, Eigen::Vector2d(x0+4*std::sqrt(3)*foreground_ball_radius, y0+4*foreground_ball_radius), Eigen::Vector2d(0,0), prim::type::interior, &foreground_ball_texture));
 						break;
 
-					case SDLK_3:
+					case SDLK_3: //test 3
 						prim_list.clear();
 						background_ball_radius = height/2.0;
 						foreground_ball_radius = 16;
@@ -306,7 +302,7 @@ int app::execute(int argc, char* argv[])
 						}
 						break;
 
-					case SDLK_4:
+					case SDLK_4: //test 4
 						prim_list.clear();
 						background_ball_radius = height/2.0;
 						foreground_ball_radius = 4;
@@ -333,7 +329,7 @@ int app::execute(int argc, char* argv[])
 						}
 						break;
 
-					case SDLK_5:
+					case SDLK_5: //test 5
 						prim_list.clear();
 						foreground_ball_radius = 27;
 						background_ball_radius = height/30.0;
