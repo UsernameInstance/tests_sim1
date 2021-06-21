@@ -7,7 +7,7 @@ Besides learning, the project was made to allow me to run a few different experi
 The project consists of four different tests together with a few settings that can be adjusted using the keyboard: method, tolerance and resting_tolerance, and coefficient of restitution (COR). A short video of the tests can be found here https://youtu.be/tMoFXv5tBHs.
 
 ### Method
-The method setting determines whether or not collisions are resolved at the time they are predicted to occur. It is the setting I was originally interested in creating this project to test.
+The method setting determines whether or not collisions are resolved at the time they are predicted to occur.
 
 Method 1 resolves collisions at the time they are predicted to occur. More specifically the earliest time of collision within the timestep is determined, the rigid bodies are moved to their positions at that time, and all collisions at that time are resolved (giving updated positions and velocities to the rigid bodies). This is repeated using the remaining time in the time step until no more collisions are detected. The main issue with this is that it can freeze up when there are a very high number of collisions occurring in a timestep (can be an infinite number of collisions in some cases, especially when dealing with inelastic collisions).
 <p align="center">
